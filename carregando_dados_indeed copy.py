@@ -1,20 +1,9 @@
-import time
-from datetime import datetime
 import pymysql
+from datetime import datetime
+import time
+#import json
 import requests
 from bs4 import BeautifulSoup
-
-
-def cria_Objeto_JSON(produto, cor, tamanho, valor, img_link):
-    x = {"produto": produto, "cor": cor, "tamanho": tamanho,
-         "valor": valor, "img_link": img_link}
-    return x
-
-
-def criaJSON(objetos):
-    y = {"produtos": objetos}
-    return y
-
 
 con = pymysql.connect(
     host='127.0.0.1',
@@ -22,27 +11,26 @@ con = pymysql.connect(
     database='vagas',
     cursorclass=pymysql.cursors.DictCursor
 )
-page = 1
+page = 0
 status = True
 cont = 0
 while(status):
     try:
-        url = 'https://www.catho.com.br/vagas/?page=' + str(page)
-        soup = BeautifulSoup(requests.get(url).text, 'html.parser')
-        teste = soup.find('ul', class_="gtm-class").find_all('li')
-        
+        url = 'https://br.indeed.com/jobs?q=&l=Vitória%2C+ES&start=' + \
+            str(page)
+        r = requests.get(url)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        teste = soup.find_all('a', class_="tapItem")
         if(len(teste) == 0):
             print('captcha')
             time.sleep(60)
             # print(soup.prettify())
             #status = False
             pass
-        
         vagas = []
         # Como na pagina de pesquisa não aparece toda a descricao, tem que entrar em cada vaga para ler se exite.
         for j in teste:
-            link = str(j['data-gtm-page']).split('//')
-            link = str(link[0])+'//'+str(link[1])
+            link = "https://br.indeed.com"+str(j['href'])
             # Verifica se a vaga já exite no banco
             mycursor = con.cursor()
             sql = "SELECT COUNT(*) AS cont FROM vagas WHERE `link` LIKE %s"
@@ -52,20 +40,23 @@ while(status):
             if(myresult['cont'] == 0):
                 print('Nova vaga: '+str(cont) +
                       ' - Data: ' + str(datetime.today()))
-                novaPage = BeautifulSoup(
-                    requests.get(link).text, 'html.parser')
-                titulo = novaPage.find('h2').find('a').text
-                cidade = novaPage.find('div', class_="cidades").text.split('(')[0]
-                descricao = novaPage.find(
-                    'span', class_="job-description").text
+                titulo = j.find(
+                    'h2', class_="jobTitle").findAll('span')[-1].text
+                cidade = j.find('div', class_="companyLocation").text
+                descricao = BeautifulSoup(requests.get(link).text, 'html.parser').find(
+                    'div', class_="jobsearch-jobDescriptionText").text
                 vaga = (str(titulo), str(link), str(cidade), str(descricao))
                 with con.cursor() as c:
                     sql = "INSERT INTO `vagas` (`id`, `titulo`, `link`, `cidade`, `descricao`) VALUES (NULL, %s, %s,%s, %s);"
                     c.execute(sql, vaga)
                 con.commit()
                 cont += 1
-        page += 1
-        print("Pagina: " + str(page))
+        # print(page/10)
+        page += 10
     except Exception as e:
         #status = False
         print("Erro: ", e)
+
+# print(criaJSON(vagas))
+# with open('indeed.json', 'w', encoding='utf8') as json_file:
+ #   json.dump(criaJSON(vagas), json_file, ensure_ascii=False)
