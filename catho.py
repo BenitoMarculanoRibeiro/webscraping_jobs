@@ -22,6 +22,13 @@ con = pymysql.connect(
     database='vagas',
     cursorclass=pymysql.cursors.DictCursor
 )
+proxies = {'http': '142.44.148.56:8080','SOCKS4': '192.99.176.117:5678'}
+s = requests.Session()
+s.proxies = {"http": "http://142.44.148.56:8080",
+             "https": "http://150.136.139.184:443",
+             }
+r = s.get("http: // toscrape.com")
+#resp = requests.get('http://example.com', proxies=proxies)
 while(True):
     page = 1
     status = True
@@ -29,7 +36,8 @@ while(True):
     while(status):
         try:
             url = 'https://www.catho.com.br/vagas/?page=' + str(page)
-            soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+            soup = BeautifulSoup(requests.get(
+                url, proxies=proxies).text, 'html.parser')
             teste = soup.find('ul', class_="gtm-class").find_all('li')
             # print(teste)
             if(None != teste):
@@ -58,7 +66,7 @@ while(True):
                         print('Nova vaga: '+str(cont) +
                             ' - Data: ' + str(datetime.today()))
                         novaPage = BeautifulSoup(
-                            requests.get(link).text, 'html.parser')
+                            requests.get(link, proxies=proxies).text, 'html.parser')
                         titulo = novaPage.find('h2').find('a').text
                         cidade = novaPage.find('div', class_="cidades").text.split('(')[0]
                         descricao = novaPage.find(
