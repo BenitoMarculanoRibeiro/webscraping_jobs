@@ -17,9 +17,9 @@ def criaJSON(objetos):
 
 
 con = pymysql.connect(
-    host='127.0.0.1',
-    user='root',
-    database='vagas',
+    host='remotemysql.com',
+    user='aEe2LdBimG', password='SvfgdVTUw5',
+    database='aEe2LdBimG',
     cursorclass=pymysql.cursors.DictCursor
 )
 while(True):
