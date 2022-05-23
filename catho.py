@@ -17,9 +17,9 @@ def criaJSON(objetos):
 
 
 con = pymysql.connect(
-    host='127.0.0.1',
-    user='root',
-    database='vagas',
+    host='remotemysql.com',
+    user='aEe2LdBimG', password='SvfgdVTUw5',
+    database='aEe2LdBimG',
     cursorclass=pymysql.cursors.DictCursor
 )
 proxies = {'http': '142.44.148.56:8080','SOCKS4': '192.99.176.117:5678'}
@@ -27,7 +27,7 @@ s = requests.Session()
 s.proxies = {"http": "http://142.44.148.56:8080",
              "https": "http://150.136.139.184:443",
              }
-r = s.get("http: // toscrape.com")
+#r = s.get("http://toscrape.com")
 #resp = requests.get('http://example.com', proxies=proxies)
 while(True):
     page = 1

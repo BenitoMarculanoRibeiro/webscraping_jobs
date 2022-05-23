@@ -2,6 +2,8 @@ import pymysql
 #import json
 import requests
 from bs4 import BeautifulSoup
+from lxml import html
+
 # empregacampinas = https://empregacampinas.com.br/categoria/vaga/page/2
 
 # infojobs  = https://www.infojobs.com.br/empregos.aspx?Page=2
@@ -28,21 +30,29 @@ def criaJSON(objetos):
     return y
 
 
-con = pymysql.connect(host='127.0.0.1', user='root',
-                      database='vagas', cursorclass=pymysql.cursors.DictCursor)
+con = pymysql.connect(
+    host='remotemysql.com',
+    user='aEe2LdBimG', password='SvfgdVTUw5',
+    database='aEe2LdBimG',
+    cursorclass=pymysql.cursors.DictCursor
+)
 i = 0
 status = True
 
 while(status):
     try:
-        url = 'https://www.infojobs.com.br/empregos.aspx?Page=' + str(i)
+        url = 'https://www.infojobs.com.br/empregos-em-sao-paulo.aspx?page=' + str(i)
         r = requests.get(url)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        teste = soup.find_all('div', class_="element-vaga")
+        #soup = BeautifulSoup(r.text, 'html.parser')
+        #teste = soup.find_all('div', id_="filterSideBar")
+        tree = html.fromstring(r.content)
+        teste = tree.xpath("//div[@id='filterSideBar']/div")
         if(len(teste) == 0):
-            print(soup.prettify())
+            #print(soup.prettify())
+            print('break')
             status = False
             break
+        print('pass', len(teste))
         # for j in range(int(3)):
         vagas = []
         for j in teste:
